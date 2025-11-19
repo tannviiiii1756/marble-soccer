@@ -148,7 +148,6 @@ static void update_game(Game *game, bool verbose)
 
 void game_play(SDL_Renderer *renderer)
 {
-    // Event handling variables
     SDL_Event event;
     int running = 1;
 
@@ -177,7 +176,6 @@ void game_play(SDL_Renderer *renderer)
 
         render(renderer, game.team1, game.team2, &(game.ball), NUM_TEAM_PLAYERS);
 
-        // Frame timing
         frame_time = SDL_GetTicks() - frame_start;
         if (frame_delay > frame_time)
         {
@@ -194,8 +192,53 @@ void game_play_no_render()
 
     while (true)
     {
-
         update_game(&game, true);
         simulate(game.balls, &(game.playground), NUM_TEAM_PLAYERS * 2 + 1, TIME_DELTA);
     }
+}
+
+//
+// --------------------------------------------------------------
+// NEW FUNCTION: BASELINE AGENT
+// --------------------------------------------------------------
+//
+
+static void baseline_choose_velocity(Ball *player, Ball *ball)
+{
+    float dx = ball->location.x - player->location.x;
+    float dy = ball->location.y - player->location.y;
+
+    // Normalize direction (simple way)
+    float length = sqrt(dx * dx + dy * dy);
+    if (length == 0)
+        length = 1;
+
+    dx /= length;
+    dy /= length;
+
+    // Scale it to allowed speed
+    player->velocity.x = dx * MAX_AXIS_VELOCITY;
+    player->velocity.y = dy * MAX_AXIS_VELOCITY;
+}
+
+void game_play_baseline_agent()
+{
+    printf("[Baseline Agent] Starting simulation...\n");
+
+    Game game;
+    setup_game(&game);
+
+    for (int step = 0; step < 3000; step++)
+    {
+        // Always control team1 player 0
+        Ball *agent = &game.team1[0];
+        Ball *ball = &game.ball;
+
+        baseline_choose_velocity(agent, ball);
+
+        update_game(&game, false);
+        simulate(game.balls, &(game.playground), NUM_TEAM_PLAYERS * 2 + 1, TIME_DELTA);
+    }
+
+    printf("[Baseline Agent] Finished.\n");
 }
