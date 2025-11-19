@@ -33,4 +33,9 @@ typedef struct
 void game_play(SDL_Renderer *renderer);
 void game_play_no_render();
 
+// --------------------------------------------------
+// NEW: Baseline Agent Simulator
+// --------------------------------------------------
+void game_play_baseline_agent();
+
 #endif
